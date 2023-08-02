@@ -1,4 +1,4 @@
-
+import simpleLightbox from 'simplelightbox';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
 import InfiniteScroll from 'infinite-scroll';
@@ -39,17 +39,25 @@ function renderGalleryMarkup({ data }) {
   const markup = data.hits
     .map(img => {
       return `
-    <div class="photo-card">
-      <img class="photo-image" src="${img.webformatURL}" alt="${img.tags}" loading="lazy" />
-      <div class="info">
-        <p class="info-item"><span>Likes:</span> <b>${img.likes}</b></p>
-        <p class="info-item"><span>Views:</span> <b>${img.views}</b></p>
-        <p class="info-item"><span>Comments:</span> <b>${img.comments}</b></p>
-        <p class="info-item"><span>Downloads:</span> <b>${img.downloads}</b></p>
-      </div>
-    </div>`;
+        <div class="photo-card">
+          <a href="${img.largeImageURL}">
+            <img class="photo-image" src="${img.webformatURL}" alt="${img.tags}" loading="lazy" />
+          </a>
+          <div class="info">
+            <p class="info-item"><span>Likes:</span> <b>${img.likes}</b></p>
+            <p class="info-item"><span>Views:</span> <b>${img.views}</b></p>
+            <p class="info-item"><span>Comments:</span> <b>${img.comments}</b></p>
+            <p class="info-item"><span>Downloads:</span> <b>${img.downloads}</b></p>
+          </div>
+        </div>
+      `;
     })
     .join('');
 
   galleryRef.insertAdjacentHTML('beforeend', markup);
+
+  const lightbox = new simpleLightbox('.gallery a', {
+    captionsData: 'alt',
+    captionDelay: 250,
+  });
 }
