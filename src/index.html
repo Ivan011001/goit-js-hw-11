@@ -5,7 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Page title</title>
     <script defer type="module" src="./index.js"></script>
+    <style>
+      body {
+        margin: 0;
+      }
+      .main-wrapper {
+        height: 100dvh;
+      }
+      .search-form {
+        background-color: lightblue;
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+      }
+
+      .search-form button {
+      }
+
+      .search-form input {
+      }
+
+      .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+
+        padding: 20px 0;
+      }
+
+      .photo-card {
+        padding: 5px;
+        box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2),
+          0px 1px 1px 0px rgba(0, 0, 0, 0.14),
+          0px 2px 1px -1px rgba(0, 0, 0, 0.12);
+
+        transition: transform 250ms ease;
+      }
+      .photo-card:hover {
+        transform: scale(1.03);
+      }
+
+      .photo-image {
+        width: 300px;
+        height: 200px;
+      }
+    </style>
   </head>
   <body>
+    <div class="main-wrapper">
+      <form class="search-form" id="search-form">
+        <input
+          type="text"
+          name="searchQuery"
+          autocomplete="off"
+          placeholder="Search images..."
+        />
+        <button type="submit">Search</button>
+      </form>
+      <div class="gallery"></div>
+    </div>
   </body>
 </html>
