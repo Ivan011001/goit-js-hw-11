@@ -10,6 +10,11 @@ const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 const galleryRef = document.querySelector('.gallery');
 const searchImageFormRef = document.querySelector('#search-form');
 
+const lightbox = new simpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+
 searchImageFormRef.addEventListener('submit', e => {
   e.preventDefault();
   const { searchQuery } = e.currentTarget.elements;
@@ -18,31 +23,15 @@ searchImageFormRef.addEventListener('submit', e => {
     return Notify.failure('Your input is invalid');
   }
 
+  addLoadNewImages().destroy();
   galleryRef.innerHTML = '';
 
   Block.standard('.main-wrapper', {
     position: 'center',
   });
 
-  let infScroll = new InfiniteScroll(galleryRef, {
-    path: function () {
-      return `https://pixabay.com/api/?key=${API_KEY}&q=${searchQuery.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.pageIndex}`;
-    },
-    responseBody: 'json',
-    status: '.scroll-status',
-    history: false,
-  });
-
-  infScroll.on('load', data => {
-    renderGalleryMarkup(data);
-    Block.remove('.main-wrapper');
-    const lightbox = new simpleLightbox('.gallery a', {
-      captionsData: 'alt',
-      captionDelay: 250,
-    });
-  });
-
-  infScroll.loadNextPage();
+  addLoadNewImages(searchQuery.value);
+  Block.remove('.main-wrapper');
 
   // searchImgByQuery(searchQuery.value)
   //   .then(response => {
@@ -52,12 +41,32 @@ searchImageFormRef.addEventListener('submit', e => {
   //     }
   //     renderGalleryMarkup(response);
   //     Block.remove('.main-wrapper');
-      // Notify.success(`We have found ${response.data.total} images`);
+  // Notify.success(`We have found ${response.data.total} images`);
   //   })
   //   .catch(console.error);
 
   e.currentTarget.reset();
 });
+
+function addLoadNewImages(query) {
+  const infScroll = new InfiniteScroll(galleryRef, {
+    path: function () {
+      return `https://pixabay.com/api/?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.pageIndex}`;
+    },
+    responseBody: 'json',
+    status: '.scroll-status',
+    history: false,
+  });
+
+  infScroll.on('load', data => {
+    renderGalleryMarkup(data);
+    lightbox.refresh();
+  });
+
+  infScroll.loadNextPage();
+
+  return infScroll;
+}
 
 function renderGalleryMarkup(data) {
   const markup = data.hits
@@ -79,11 +88,6 @@ function renderGalleryMarkup(data) {
     .join('');
 
   galleryRef.insertAdjacentHTML('beforeend', markup);
-
-  const lightbox = new simpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionDelay: 250,
-  });
 }
 
 function searchImgByQuery(imgQuery) {
