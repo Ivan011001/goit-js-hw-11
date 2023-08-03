@@ -7,7 +7,6 @@ import InfiniteScroll from 'infinite-scroll';
 const BASE_URL = 'https://pixabay.com/api';
 const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 
-let page = 0;
 
 const galleryRef = document.querySelector('.gallery');
 const searchImageFormRef = document.querySelector('#search-form');
@@ -18,7 +17,7 @@ searchImageFormRef.addEventListener('submit', e => {
   if (!searchQuery.value) {
     return Notify.failure('Your input is invalid');
   }
-  page = 0;
+
   galleryRef.innerHTML = '';
 
   Block.standard('.main-wrapper', {
@@ -29,11 +28,13 @@ searchImageFormRef.addEventListener('submit', e => {
     .then(response => {
       if (!response.data.totalHits) {
         Block.remove('.main-wrapper');
-        return Notify.failure('Sorry, there are no images');
+        return Notify.failure('Sorry, there are no such images');
       }
       renderGalleryMarkup(response);
       Block.remove('.main-wrapper');
-      Notify.success('Here are your images');
+      Notify.success(
+        `We have found ${response.data.total} images`
+      );
     })
     .catch(console.error);
 
@@ -69,58 +70,6 @@ function renderGalleryMarkup({ data }) {
 
 function searchImgByQuery(imgQuery) {
   return axios.get(
-    `${BASE_URL}?key=${API_KEY}&q=${imgQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${(page += 1)}`
+    `${BASE_URL}?key=${API_KEY}&q=${imgQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40`
   );
 }
-
-
-
-
-
-// let newContainer = document.querySelector('.new-container');
-
-// let newInfScroll = new InfiniteScroll(newContainer, {
-//   path: function () {
-//     return `https://pixabay.com/api?key=38601614-53dd37c61e051eba7000d3146&q=cat&image_type=photo&orientation=horizontal&safesearch=true&page=${this.pageIndex}`;
-//   },
-//   // load response as JSON
-//   responseBody: 'json',
-//   status: '.scroll-status',
-//   history: false,
-// });
-
-// let newProxyElem = document.createElement('div');
-
-// newInfScroll.on('load', ({ hits }) => {
-//   console.log(hits);
-
-//   let newItemsHTML = hits
-//     .map(img => {
-//       return `
-//     <div>
-//     <img src="${img.largeImageURL}" alt="slfm" />
-//     </div>`;
-//     })
-//     .join('');
-//   console.log(newItemsHTML);
-
-//   newProxyElem.innerHTML = newItemsHTML;
-//   console.log(newProxyElem);
-//   newContainer.append(...newProxyElem.children);
-// });
-
-// newInfScroll.loadNextPage();
-
-// function renderMarkup({ hits }) {
-//   console.log(markup);
-//   const markup = hits
-//     .map(img => {
-//       return `
-//     <div>
-//     <img src="${img.largeImageURL}" />
-//     </div>`;
-//     })
-//     .join('');
-
-//   newProxyElem.innerHTML = markup;
-// }
