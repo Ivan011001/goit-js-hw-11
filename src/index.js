@@ -7,9 +7,9 @@ import InfiniteScroll from 'infinite-scroll';
 const BASE_URL = 'https://pixabay.com/api';
 const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 
-
 const galleryRef = document.querySelector('.gallery');
 const searchImageFormRef = document.querySelector('#search-form');
+
 searchImageFormRef.addEventListener('submit', e => {
   e.preventDefault();
   const { searchQuery } = e.currentTarget.elements;
@@ -24,24 +24,42 @@ searchImageFormRef.addEventListener('submit', e => {
     position: 'center',
   });
 
-  searchImgByQuery(searchQuery.value)
-    .then(response => {
-      if (!response.data.totalHits) {
-        Block.remove('.main-wrapper');
-        return Notify.failure('Sorry, there are no such images');
-      }
-      renderGalleryMarkup(response);
-      Block.remove('.main-wrapper');
-      Notify.success(
-        `We have found ${response.data.total} images`
-      );
-    })
-    .catch(console.error);
+  let infScroll = new InfiniteScroll(galleryRef, {
+    path: function () {
+      return `https://pixabay.com/api/?key=${API_KEY}&q=${searchQuery.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.pageIndex}`;
+    },
+    responseBody: 'json',
+    status: '.scroll-status',
+    history: false,
+  });
+
+  infScroll.on('load', data => {
+    renderGalleryMarkup(data);
+    Block.remove('.main-wrapper');
+    const lightbox = new simpleLightbox('.gallery a', {
+      captionsData: 'alt',
+      captionDelay: 250,
+    });
+  });
+
+  infScroll.loadNextPage();
+
+  // searchImgByQuery(searchQuery.value)
+  //   .then(response => {
+  //     if (!response.data.totalHits) {
+  //       Block.remove('.main-wrapper');
+  //       return Notify.failure('Sorry, there are no such images');
+  //     }
+  //     renderGalleryMarkup(response);
+  //     Block.remove('.main-wrapper');
+      // Notify.success(`We have found ${response.data.total} images`);
+  //   })
+  //   .catch(console.error);
 
   e.currentTarget.reset();
 });
 
-function renderGalleryMarkup({ data }) {
+function renderGalleryMarkup(data) {
   const markup = data.hits
     .map(img => {
       return `
