@@ -1,75 +1,64 @@
-import axios from 'axios';
-import simpleLightbox from 'simplelightbox';
-import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import { Block } from 'notiflix';
-import InfiniteScroll from 'infinite-scroll';
+import SimpleLightbox from 'simplelightbox';
+import Notiflix from 'notiflix';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import { fetchImages, currentPage } from './search-api';
+import { createIntersectionObserver } from './inter-observ';
 
-const BASE_URL = 'https://pixabay.com/api';
-const API_KEY = '38601614-53dd37c61e051eba7000d3146';
+const imagesPerPage = 40;
+let currentSearchQuery = '';
 
+const target = document.querySelector('.load-more');
 const galleryRef = document.querySelector('.gallery');
-const searchImageFormRef = document.querySelector('#search-form');
-
-const lightbox = new simpleLightbox('.gallery a', {
+const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
 
-searchImageFormRef.addEventListener('submit', e => {
-  e.preventDefault();
-  const { searchQuery } = e.currentTarget.elements;
+const inputRef = document.querySelector('input');
+const formRef = document.querySelector('.search-form');
+formRef.addEventListener('submit', formSubmitHandles);
 
-  if (!searchQuery.value) {
-    return Notify.failure('Your input is invalid');
+async function formSubmitHandles(e) {
+  e.preventDefault();
+
+  if (!inputRef.value) {
+    return Notiflix.Notify.failure('Your input is invalid');
   }
 
-  addLoadNewImages().destroy();
-  galleryRef.innerHTML = '';
-
-  Block.standard('.main-wrapper', {
+  currentSearchQuery = inputRef.value;
+  Notiflix.Block.standard('.main-wrapper', {
     position: 'center',
   });
 
-  addLoadNewImages(searchQuery.value);
-  Block.remove('.main-wrapper');
+  inputRef.value = '';
+  currentPage = 1;
+  galleryRef.innerHTML = '';
 
-  // searchImgByQuery(searchQuery.value)
-  //   .then(response => {
-  //     if (!response.data.totalHits) {
-  //       Block.remove('.main-wrapper');
-  //       return Notify.failure('Sorry, there are no such images');
-  //     }
-  //     renderGalleryMarkup(response);
-  //     Block.remove('.main-wrapper');
-  // Notify.success(`We have found ${response.data.total} images`);
-  //   })
-  //   .catch(console.error);
+  try {
+    const imagesData = await fetchImages(
+      currentSearchQuery,
+      currentPage,
+      imagesPerPage
+    );
+    if (imagesData.length === 0) {
+      Notiflix.Block.remove('.main-wrapper');
+      return Notiflix.Notify.failure('Sorry, there are no such images...');
+    }
 
-  e.currentTarget.reset();
-});
-
-function addLoadNewImages(query) {
-  const infScroll = new InfiniteScroll(galleryRef, {
-    path: function () {
-      return `https://pixabay.com/api/?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.pageIndex}`;
-    },
-    responseBody: 'json',
-    status: '.scroll-status',
-    history: false,
-  });
-
-  infScroll.on('load', data => {
-    renderGalleryMarkup(data);
+    Notiflix.Notify.success(
+      'We have found some images for you! Scroll down to see all of them'
+    );
+    renderGalleryMarkup(imagesData);
+    Notiflix.Block.remove('.main-wrapper');
     lightbox.refresh();
-  });
-
-  infScroll.loadNextPage();
-
-  return infScroll;
+    createIntersectionObserver(target, loadMoreImages);
+  } catch (error) {
+    console.warn(error.message);
+  }
 }
 
 function renderGalleryMarkup(data) {
-  const markup = data.hits
+  const markup = data
     .map(img => {
       return `
         <div class="photo-card">
@@ -90,8 +79,22 @@ function renderGalleryMarkup(data) {
   galleryRef.insertAdjacentHTML('beforeend', markup);
 }
 
-function searchImgByQuery(imgQuery) {
-  return axios.get(
-    `${BASE_URL}?key=${API_KEY}&q=${imgQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40`
-  );
+async function loadMoreImages() {
+  try {
+    const imagesData = await fetchImages(
+      currentSearchQuery,
+      currentPage,
+      imagesPerPage
+    );
+
+    if (imagesData.length === 0) {
+      Notiflix.Notify.failure('No more images to load.');
+      return;
+    }
+
+    renderGalleryMarkup(imagesData);
+    lightbox.refresh();
+  } catch (error) {
+    console.warn(error.message);
+  }
 }
