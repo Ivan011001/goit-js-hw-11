@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-let currentPage = 1;
+export let currentPage = 1;
 const BASE_URL = 'https://pixabay.com/api';
 const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 
