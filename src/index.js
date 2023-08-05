@@ -13,7 +13,7 @@ let currentSearchQuery = '';
 async function fetchImages(query) {
   try {
     const response = await axios.get(
-      `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${imagesPerPage}&page=${currentPage}`
+      `https://pixabay.com/api/?key=38601614-53dd37c61e051eba7000d3146&q=cat&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=1`
     );
     currentPage += 1;
 
