@@ -13,7 +13,7 @@ let currentSearchQuery = '';
 async function fetchImages(query) {
   try {
     const response = await axios.get(
-      `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=4${imagesPerPage}&page=${currentPage}`
+      `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${imagesPerPage}&page=${currentPage}`
     );
     currentPage += 1;
 
