@@ -3,7 +3,7 @@ import SimpleLightbox from 'simplelightbox';
 import Notiflix from 'notiflix';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const BASE_URL = 'https://pixabay.com/api';
+const BASE_URL = 'https://pixabay.com/api/';
 const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 
 let currentPage = 1;
@@ -13,7 +13,7 @@ let currentSearchQuery = '';
 async function fetchImages(query) {
   try {
     const response = await axios.get(
-      `https://pixabay.com/api/?key=38601614-53dd37c61e051eba7000d3146&q=cat&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=1`
+      `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=4${imagesPerPage}&page=${currentPage}`
     );
     currentPage += 1;
 
