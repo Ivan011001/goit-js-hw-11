@@ -9,12 +9,16 @@ const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 let currentPage = 1;
 const imagesPerPage = 40;
 let currentSearchQuery = '';
+let isLoading = false;
+let totalImages = 0;
 
 async function fetchImages(query) {
   try {
     const response = await axios.get(
       `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${imagesPerPage}&page=${currentPage}`
     );
+
+    totalImages = response.data.totalHits;
     currentPage += 1;
 
     return response.data.hits;
@@ -30,8 +34,11 @@ const observerOptions = {
   threshold: 0.1,
 };
 
+const target = document.querySelector('.load-more');
+
 function createIntersectionObserver() {
   const observer = new IntersectionObserver(async entries => {
+    if (isLoading) return;
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         loadMoreImages();
@@ -42,7 +49,6 @@ function createIntersectionObserver() {
   observer.observe(target);
 }
 
-const target = document.querySelector('.load-more');
 const galleryRef = document.querySelector('.gallery');
 const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
@@ -55,15 +61,17 @@ formRef.addEventListener('submit', async e => {
   e.preventDefault();
 
   if (!inputRef.value) {
-    return Notiflix.Notify.failure('Your input is invalid');
+    return Notiflix.Notify.failure('Your input is invalid', {
+      showOnlyTheLastOne: true,
+    });
   }
 
-  currentSearchQuery = inputRef.value; // Store the current search query
+  currentSearchQuery = inputRef.value;
+  isLoading = true;
   Notiflix.Block.standard('.main-wrapper', {
     position: 'center',
   });
 
-  target.classList.remove('is-hidden');
   currentPage = 1;
   galleryRef.innerHTML = '';
 
@@ -72,11 +80,16 @@ formRef.addEventListener('submit', async e => {
     inputRef.value = '';
     if (imagesData.length === 0) {
       Notiflix.Block.remove('.main-wrapper');
-      return Notiflix.Notify.failure('Sorry, there are no such images...');
+      return Notiflix.Notify.failure('Sorry, there are no such images...', {
+        showOnlyTheLastOne: true,
+      });
     }
 
     Notiflix.Notify.success(
-      'We have found some images for you! Scroll down to see all of them'
+      'We have found some images for you! Scroll down to see all of them',
+      {
+        showOnlyTheLastOne: true,
+      }
     );
     inputRef.value = '';
     renderGalleryMarkup(imagesData);
@@ -85,6 +98,8 @@ formRef.addEventListener('submit', async e => {
     createIntersectionObserver();
   } catch (error) {
     console.warn(error.message);
+  } finally {
+    isLoading = false;
   }
 });
 
@@ -115,12 +130,22 @@ async function loadMoreImages() {
     const imagesData = await fetchImages(currentSearchQuery);
 
     if (imagesData.length === 0) {
-      Notiflix.Notify.failure('No more images to load.');
+      Notiflix.Notify.failure('No more images to load.', {
+        showOnlyTheLastOne: true,
+      });
       return;
     }
 
     renderGalleryMarkup(imagesData);
     lightbox.refresh();
+
+    const loadedImages = document.querySelectorAll('.photo-card').length;
+    if (loadedImages >= totalImages) {
+      Notiflix.Notify.info('You have reached the last page.', {
+        showOnlyTheLastOne: true,
+      });
+      target.classList.remove('visible');
+    }
   } catch (error) {
     console.warn(error.message);
   }
