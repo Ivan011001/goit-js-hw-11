@@ -60,13 +60,13 @@ const formRef = document.querySelector('.search-form');
 formRef.addEventListener('submit', async e => {
   e.preventDefault();
 
-  if (!inputRef.value) {
+  if (!inputRef.value.trim()) {
     return Notiflix.Notify.failure('Your input is invalid', {
       showOnlyTheLastOne: true,
     });
   }
 
-  currentSearchQuery = inputRef.value;
+  currentSearchQuery = inputRef.value.trim();
   isLoading = true;
   Notiflix.Block.standard('.main-wrapper', {
     position: 'center',
