@@ -11,6 +11,8 @@ const imagesPerPage = 40;
 let currentSearchQuery = '';
 let isLoading = false;
 let totalImages = 0;
+let totalPages = 0;
+let isLastPageReached = false; 
 
 async function fetchImages(query) {
   try {
@@ -19,6 +21,7 @@ async function fetchImages(query) {
     );
 
     totalImages = response.data.totalHits;
+    totalPages = Math.ceil(totalImages / imagesPerPage); 
     currentPage += 1;
 
     return response.data.hits;
@@ -72,6 +75,8 @@ formRef.addEventListener('submit', async e => {
     position: 'center',
   });
 
+  isLastPageReached = false;
+  totalPages = 0;
   currentPage = 1;
   galleryRef.innerHTML = '';
 
@@ -127,23 +132,32 @@ function renderGalleryMarkup(data) {
 
 async function loadMoreImages() {
   try {
+    if (isLastPageReached) {
+      // Check if the last page is already reached
+      Notiflix.Notify.info('You have reached the last page.', {
+        showOnlyTheLastOne: true,
+      });
+      return;
+    }
+
     const imagesData = await fetchImages(currentSearchQuery);
 
     if (imagesData.length === 0) {
       Notiflix.Notify.failure('No more images to load.', {
         showOnlyTheLastOne: true,
       });
+      isLastPageReached = true; 
       return;
     }
 
     renderGalleryMarkup(imagesData);
     lightbox.refresh();
 
-    const loadedImages = document.querySelectorAll('.photo-card').length;
-    if (loadedImages >= totalImages) {
+    if (currentPage >= totalPages) {
       Notiflix.Notify.info('You have reached the last page.', {
         showOnlyTheLastOne: true,
       });
+      isLastPageReached = true; 
       target.classList.remove('visible');
     }
   } catch (error) {

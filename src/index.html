@@ -25,7 +25,7 @@
         justify-content: center;
         padding: 20px 0;
       }
-      
+
       .gallery {
         display: flex;
         flex-wrap: wrap;
@@ -51,6 +51,14 @@
         width: 300px;
         height: 200px;
       }
+
+      .load-more {
+        display: none;
+      }
+
+      .visible {
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -65,7 +73,7 @@
         <button type="submit">Search</button>
       </form>
       <div class="gallery"></div>
-      <div class="load-more"></div>
+      <div class="load-more visible"></div>
     </div>
   </body>
 </html>
