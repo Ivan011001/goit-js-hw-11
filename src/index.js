@@ -9,10 +9,9 @@ const API_KEY = '38601614-53dd37c61e051eba7000d3146';
 let currentPage = 1;
 const imagesPerPage = 40;
 let currentSearchQuery = '';
-let isLoading = false;
 let totalImages = 0;
 let totalPages = 0;
-let isLastPageReached = false; 
+let isLastPageReached = false;
 
 async function fetchImages(query) {
   try {
@@ -21,7 +20,7 @@ async function fetchImages(query) {
     );
 
     totalImages = response.data.totalHits;
-    totalPages = Math.ceil(totalImages / imagesPerPage); 
+    totalPages = Math.ceil(totalImages / imagesPerPage);
     currentPage += 1;
 
     return response.data.hits;
@@ -41,10 +40,11 @@ const target = document.querySelector('.load-more');
 
 function createIntersectionObserver() {
   const observer = new IntersectionObserver(async entries => {
-    if (isLoading) return;
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        loadMoreImages();
+        if (currentPage <= totalPages) {
+          loadMoreImages();
+        }
       }
     });
   }, observerOptions);
@@ -60,7 +60,9 @@ const lightbox = new SimpleLightbox('.gallery a', {
 
 const inputRef = document.querySelector('input');
 const formRef = document.querySelector('.search-form');
-formRef.addEventListener('submit', async e => {
+formRef.addEventListener('submit', formSubmitHandler);
+
+async function formSubmitHandler(e) {
   e.preventDefault();
 
   if (!inputRef.value.trim()) {
@@ -70,7 +72,6 @@ formRef.addEventListener('submit', async e => {
   }
 
   currentSearchQuery = inputRef.value.trim();
-  isLoading = true;
   Notiflix.Block.standard('.main-wrapper', {
     position: 'center',
   });
@@ -96,17 +97,14 @@ formRef.addEventListener('submit', async e => {
         showOnlyTheLastOne: true,
       }
     );
-    inputRef.value = '';
     renderGalleryMarkup(imagesData);
     Notiflix.Block.remove('.main-wrapper');
     lightbox.refresh();
     createIntersectionObserver();
   } catch (error) {
     console.warn(error.message);
-  } finally {
-    isLoading = false;
   }
-});
+}
 
 function renderGalleryMarkup(data) {
   const markup = data
@@ -133,11 +131,9 @@ function renderGalleryMarkup(data) {
 async function loadMoreImages() {
   try {
     if (isLastPageReached) {
-      // Check if the last page is already reached
-      Notiflix.Notify.info('You have reached the last page.', {
+      return Notiflix.Notify.info('You have reached the last page.', {
         showOnlyTheLastOne: true,
       });
-      return;
     }
 
     const imagesData = await fetchImages(currentSearchQuery);
@@ -146,7 +142,7 @@ async function loadMoreImages() {
       Notiflix.Notify.failure('No more images to load.', {
         showOnlyTheLastOne: true,
       });
-      isLastPageReached = true; 
+      isLastPageReached = true;
       return;
     }
 
@@ -157,8 +153,7 @@ async function loadMoreImages() {
       Notiflix.Notify.info('You have reached the last page.', {
         showOnlyTheLastOne: true,
       });
-      isLastPageReached = true; 
-      target.classList.remove('visible');
+      isLastPageReached = true;
     }
   } catch (error) {
     console.warn(error.message);
