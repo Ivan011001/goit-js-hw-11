@@ -41,10 +41,8 @@ const target = document.querySelector('.load-more');
 function createIntersectionObserver() {
   const observer = new IntersectionObserver(async entries => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        if (currentPage <= totalPages) {
-          loadMoreImages();
-        }
+      if (entry.isIntersecting && currentPage <= totalPages) {
+        loadMoreImages();
       }
     });
   }, observerOptions);
@@ -77,6 +75,7 @@ async function formSubmitHandler(e) {
   });
 
   isLastPageReached = false;
+  totalImages = 0;
   totalPages = 0;
   currentPage = 1;
   galleryRef.innerHTML = '';
