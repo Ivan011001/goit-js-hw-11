@@ -38,17 +38,11 @@ const observerOptions = {
 
 const target = document.querySelector('.load-more');
 
-function createIntersectionObserver() {
-  const observer = new IntersectionObserver(async entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && currentPage <= totalPages) {
-        loadMoreImages();
-      }
-    });
-  }, observerOptions);
-
-  observer.observe(target);
-}
+const observer = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting && currentPage <= totalPages) {
+    loadMoreImages();
+  }
+}, observerOptions);
 
 const galleryRef = document.querySelector('.gallery');
 const lightbox = new SimpleLightbox('.gallery a', {
@@ -99,10 +93,12 @@ async function formSubmitHandler(e) {
     renderGalleryMarkup(imagesData);
     Notiflix.Block.remove('.main-wrapper');
     lightbox.refresh();
-    createIntersectionObserver();
+    observer.observe(target);
   } catch (error) {
     console.warn(error.message);
   }
+
+  observer.unobserve(target);
 }
 
 function renderGalleryMarkup(data) {
@@ -158,3 +154,27 @@ async function loadMoreImages() {
     console.warn(error.message);
   }
 }
+
+// import axios from 'axios';
+// import SimpleLightbox from 'simplelightbox';
+// import Notiflix from 'notiflix';
+// import 'simplelightbox/dist/simple-lightbox.min.css';
+
+// const BASE_URL = 'https://pixabay.com/api/';
+// const API_KEY = '38601614-53dd37c61e051eba7000d3146';
+
+// const imagesPerPage = 40;
+// let currentPage = 1;
+
+// async function fetchImagesByQuery(query) {
+//   try {
+//     const response = axios.get(
+//       `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${imagesPerPage}&page=${currentPage}`
+//     );
+
+//     currentPage += 1;
+//     console.log(response);
+//   } catch (error) {
+//     console.log(error.message);
+//   }
+// }
