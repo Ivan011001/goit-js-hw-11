@@ -1,6 +1,6 @@
 import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
-import Notiflix from 'notiflix';
+import Notiflix, { Notify } from 'notiflix';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const BASE_URL = 'https://pixabay.com/api/';
@@ -29,14 +29,13 @@ async function fetchImages(query) {
   }
 }
 
-const observerOptions = {
-  root: null,
-  rootMargin: '0px 0px 300px 0px',
-  threshold: 0,
-};
-
 const target = document.querySelector('.load-more');
 
+const observerOptions = {
+  root: null,
+  rootMargin: '0px 0px 1000px 0px',
+  threshold: 0,
+};
 const observer = new IntersectionObserver(entries => {
   if (entries[0].isIntersecting && currentPage <= totalPages) {
     loadMoreImages();
@@ -89,6 +88,18 @@ async function formSubmitHandler(e) {
         showOnlyTheLastOne: true,
       }
     );
+
+    // document.addEventListener('scroll', e => {
+    //   let documentHeight = document.body.scrollHeight;
+    //   let currentScroll = window.scrollY + window.innerHeight;
+
+    //   if (currentScroll + 1 > documentHeight) {
+    //     Notify.failure('Sorry, there are no more images to load...', {
+    //       showOnlyTheLastOne: true,
+    //     });
+    //   }
+    // });
+
     renderGalleryMarkup(imagesData);
     Notiflix.Block.remove('.main-wrapper');
     lightbox.refresh();
@@ -123,13 +134,6 @@ function renderGalleryMarkup(data) {
 async function loadMoreImages() {
   try {
     const imagesData = await fetchImages(currentSearchQuery);
-
-    if (imagesData.length === 0) {
-      return Notiflix.Notify.failure('No more images to load.', {
-        showOnlyTheLastOne: true,
-      });
-    }
-
     renderGalleryMarkup(imagesData);
     lightbox.refresh();
 
