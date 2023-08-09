@@ -11,7 +11,6 @@ const imagesPerPage = 40;
 let currentSearchQuery = '';
 let totalImages = 0;
 let totalPages = 0;
-let isLastPageReached = false;
 
 async function fetchImages(query) {
   try {
@@ -32,8 +31,8 @@ async function fetchImages(query) {
 
 const observerOptions = {
   root: null,
-  rootMargin: '0px',
-  threshold: 0.1,
+  rootMargin: '0px 0px 300px 0px',
+  threshold: 0,
 };
 
 const target = document.querySelector('.load-more');
@@ -68,7 +67,6 @@ async function formSubmitHandler(e) {
     position: 'center',
   });
 
-  isLastPageReached = false;
   totalImages = 0;
   totalPages = 0;
   currentPage = 1;
@@ -124,20 +122,12 @@ function renderGalleryMarkup(data) {
 
 async function loadMoreImages() {
   try {
-    if (isLastPageReached) {
-      return Notiflix.Notify.info('You have reached the last page.', {
-        showOnlyTheLastOne: true,
-      });
-    }
-
     const imagesData = await fetchImages(currentSearchQuery);
 
     if (imagesData.length === 0) {
-      Notiflix.Notify.failure('No more images to load.', {
+      return Notiflix.Notify.failure('No more images to load.', {
         showOnlyTheLastOne: true,
       });
-      isLastPageReached = true;
-      return;
     }
 
     renderGalleryMarkup(imagesData);
@@ -147,33 +137,8 @@ async function loadMoreImages() {
       Notiflix.Notify.info('You have reached the last page.', {
         showOnlyTheLastOne: true,
       });
-      isLastPageReached = true;
     }
   } catch (error) {
     console.warn(error.message);
   }
 }
-
-// import axios from 'axios';
-// import SimpleLightbox from 'simplelightbox';
-// import Notiflix from 'notiflix';
-// import 'simplelightbox/dist/simple-lightbox.min.css';
-
-// const BASE_URL = 'https://pixabay.com/api/';
-// const API_KEY = '38601614-53dd37c61e051eba7000d3146';
-
-// const imagesPerPage = 40;
-// let currentPage = 1;
-
-// async function fetchImagesByQuery(query) {
-//   try {
-//     const response = axios.get(
-//       `${BASE_URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${imagesPerPage}&page=${currentPage}`
-//     );
-
-//     currentPage += 1;
-//     console.log(response);
-//   } catch (error) {
-//     console.log(error.message);
-//   }
-// }
