@@ -73,6 +73,7 @@ async function formSubmitHandler(e) {
   totalPages = 0;
   currentPage = 1;
   galleryRef.innerHTML = '';
+  observer.unobserve(target);
 
   try {
     const imagesData = await fetchImages(currentSearchQuery);
@@ -97,8 +98,6 @@ async function formSubmitHandler(e) {
   } catch (error) {
     console.warn(error.message);
   }
-
-  observer.unobserve(target);
 }
 
 function renderGalleryMarkup(data) {
